@@ -426,12 +426,74 @@ hr {
 
 /* ── HIDE STREAMLIT DEFAULTS ── */
 #MainMenu { visibility: hidden; }
+/* Force sidebar always visible, hide collapse button */
+[data-testid="collapsedControl"] { display: none !important; }
+[data-testid="stSidebarCollapseButton"] { display: none !important; }
+[data-testid="stLogoSpacer"] { display: none !important; }
+div[class*="stLogoSpacer"] { display: none !important; }
+header[data-testid="stHeader"] { display: none !important; }
+section[data-testid="stSidebar"] { 
+    min-width: 320px !important; 
+    width: 320px !important;
+    transform: none !important;
+    left: 0 !important;
+    visibility: visible !important;
+    display: block !important;
+}
+section[data-testid="stSidebar"] > div {
+    width: 320px !important;
+}
+[data-testid="collapsedControl"] { display: none !important; }
+/* Hide keyboard shortcut tooltip */
+.stActionButton { display: none !important; }
+/* Remove keyboard text from expanders and interactive elements */
+.st-emotion-cache-ujm5ma { display: none !important; }
+.st-emotion-cache-pkm19r { display: none !important; }
+span[data-testid="stIconMaterial"] { display: none !important; }
+button[data-testid="baseButton-headerNoPadding"] { display: none !important; }
+iframe[title="keyboard_shortcut"] { display: none !important; }
+div[class*="keyboard"] { display: none !important; }
+button[aria-label*="keyboard"] { display: none !important; }
+button[aria-label*="shortcuts"] { display: none !important; }
+.st-emotion-cache-czk5ss { display: none !important; }
+.st-emotion-cache-1dp5vir { display: none !important; }
 footer { visibility: hidden; }
 header { visibility: hidden; }
 .stDeployButton { display: none; }
 [data-testid="stToolbar"] { display: none; }
 </style>
 """, unsafe_allow_html=True)
+# Kill the keyboard shortcut floating element
+st.components.v1.html("""
+<script>
+function removeKeyboardOverlay() {
+    // Find and remove any element containing 'keyboard' text
+    const allElements = document.querySelectorAll('*');
+    allElements.forEach(el => {
+        if (el.children.length === 0 && 
+            el.textContent.trim().toLowerCase().includes('keyboard')) {
+            el.style.display = 'none';
+        }
+    });
+    
+    // Also hide the stLogoSpacer area
+    const spacers = document.querySelectorAll('[data-testid="stLogoSpacer"]');
+    spacers.forEach(el => el.style.display = 'none');
+    
+    // Hide header area
+    const headers = document.querySelectorAll('header');
+    headers.forEach(el => el.style.display = 'none');
+}
+
+// Run immediately
+removeKeyboardOverlay();
+
+// Run again after page loads fully
+setTimeout(removeKeyboardOverlay, 500);
+setTimeout(removeKeyboardOverlay, 1500);
+setTimeout(removeKeyboardOverlay, 3000);
+</script>
+""", height=0)
 
 # ── SESSION STATE ─────────────────────────────────────────────────
 defaults = {
