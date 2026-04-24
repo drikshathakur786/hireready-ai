@@ -2,10 +2,10 @@
 
 > Upload your resume. Paste a JD. Know exactly where you stand.
 
-[![Live App](https://img.shields.io/badge/Live%20App-hireready--ai-brightgreen?style=flat-square)](https://hireready-ai.streamlit.app)
-[![Python](https://img.shields.io/badge/Python-3.11-blue?style=flat-square&logo=python)](https://python.org)
-[![Groq](https://img.shields.io/badge/Groq-LLaMA%203.3-orange?style=flat-square)](https://console.groq.com)
-[![License](https://img.shields.io/badge/License-MIT-lightgrey?style=flat-square)](LICENSE)
+[![Live App](https://img.shields.io/badge/Live%20App-%20hireready--ai-00C853?style=for-the-badge)](https://hireready-ai.streamlit.app)
+[![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![Groq](https://img.shields.io/badge/Groq-LLaMA%203.3-F55036?style=for-the-badge)](https://console.groq.com)
+[![License](https://img.shields.io/badge/License-MIT-22223B?style=for-the-badge)](https://github.com/drikshathakur786/hireready-ai/blob/main/LICENSE)
 
 ---
 
@@ -55,6 +55,7 @@ Then open [http://localhost:8501](http://localhost:8501) in your browser.
 ---
 
 ## Project Structure
+
 ```
 hireready-ai/
 ├── app.py                  # Streamlit frontend
@@ -63,8 +64,9 @@ hireready-ai/
 ├── prompts/                # AI prompt builders
 └── utils/                  # Display formatters
 ```
+
 ---
 
 ## License
 
-[MIT](LICENSE) © 2026 Driksha Thakur
+[MIT](https://github.com/drikshathakur786/hireready-ai/blob/main/LICENSE) © 2026 Driksha Thakur
