@@ -1,72 +1,75 @@
-# HireReady AI — Job Readiness Platform
+# HireReady AI
 
-> Upload your resume. Paste a JD. Know exactly where you stand.
+Upload your resume, paste a job description, and find out exactly where you stand — no fluff, no guesswork.
 
-[![Live App](https://img.shields.io/badge/Live%20App-%20hireready--ai-00C853?style=for-the-badge)](https://hireready-ai.streamlit.app)
-[![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
-[![Groq](https://img.shields.io/badge/Groq-LLaMA%203.3-F55036?style=for-the-badge)](https://console.groq.com)
-[![License](https://img.shields.io/badge/License-MIT-22223B?style=for-the-badge)](https://github.com/drikshathakur786/hireready-ai/blob/main/LICENSE)
+Built this because I was tired of applying to roles blind. Now I can see my skill gaps, practice with AI-generated interview questions, and actually fix my resume bullets before submitting.
 
----
-
-## What it does
-
-| # | Feature | Description |
-|---|---|---|
-| 01 | 📄 Resume Analysis | Match score, skills gap analysis, and hiring recommendation |
-| 02 | ✏️ Bullet Rewriter | Rewrites weak resume bullets into STAR format |
-| 03 | 🎯 Interview Predictor | 10 tailored questions based on your resume + JD |
-| 04 | 🎤 Mock Interview | 8-round AI interview with per-round scoring and full report |
-| 05 | 📊 Batch Screener | Screen multiple resumes against one JD, export as CSV |
+[![Live Demo](https://img.shields.io/badge/try_it_live-hireready--ai.streamlit.app-22D3EE?style=flat-square)](https://hireready-ai.streamlit.app)
 
 ---
 
-## Getting Started
+## Features
 
-### Prerequisites
-- Python 3.11+
-- A free Groq API key → [console.groq.com](https://console.groq.com)
+**Resume Analysis** — Drop your PDF and a job description. Get a match score out of 100, see which skills you have vs. what's missing, and get a hire/no-hire recommendation with reasoning.
 
-### Installation
+**Bullet Rewriter** — Picks out the bullet points from your resume and rewrites them using STAR format, tailored to the JD you're targeting.
+
+**Interview Predictor** — Generates 10 questions you're likely to be asked based on your resume gaps and the role requirements. Each comes with a suggested answer framework.
+
+**Mock Interview** — 8-question simulated interview with real-time scoring. You answer, the AI evaluates each response, tells you what worked and what didn't, and gives you a final grade + report you can download.
+
+**Batch Screener** — Upload multiple resumes against one JD. Ranks candidates by match score. Export results as CSV.
+
+---
+
+## Run locally
+
+You'll need Python 3.11+ and a [Groq API key](https://console.groq.com) (free tier works fine).
 
 ```bash
 git clone https://github.com/drikshathakur786/hireready-ai.git
 cd hireready-ai
-python3 -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 echo "GROQ_API_KEY=your_key_here" > .env
 streamlit run app.py
 ```
 
-Then open [http://localhost:8501](http://localhost:8501) in your browser.
+Opens at `localhost:8501`.
 
 ---
 
-## Stack
+## How it's built
 
-| Layer | Technology |
+The frontend is a single Streamlit app (`app.py`) with custom CSS — dark glassmorphic UI, Plus Jakarta Sans / Inter typography, animated aurora background. No React, no Tailwind, just raw HTML/CSS injected via `st.markdown`.
+
+The AI layer runs on **Groq's LLaMA 3.3-70B** for speed. Each feature has its own prompt builder in `prompts/` and feature module in `features/`. PDF parsing is handled by pdfplumber.
+
+```
+app.py                  ← UI + routing
+core/
+  ai_client.py          ← Groq API wrapper
+  pdf_parser.py         ← PDF text extraction
+  validators.py         ← Response parsing + validation
+features/
+  resume_analyzer.py    ← Match scoring + skill gap
+  bullet_rewriter.py    ← STAR format rewriting
+  interview_predictor.py ← Question generation
+  interview_simulator.py ← Mock interview + evaluation
+  batch_screener.py     ← Multi-resume screening
+prompts/                ← Prompt templates for each feature
+utils/formatters.py     ← Display helpers
+```
+
+| | |
 |---|---|
-| Language | Python 3.11 |
+| Language | Python |
 | UI | Streamlit |
-| AI Engine | Groq · LLaMA 3.3-70B |
-| PDF Parsing | pdfplumber |
-| Data Handling | pandas |
-
----
-
-## Project Structure
-
-```
-hireready-ai/
-├── app.py                  # Streamlit frontend
-├── core/                   # AI client, PDF parser, validators
-├── features/               # Analyzer, rewriter, predictor, simulator
-├── prompts/                # AI prompt builders
-└── utils/                  # Display formatters
-```
+| LLM | Groq · LLaMA 3.3-70B |
+| PDF | pdfplumber |
+| Data | pandas |
 
 ---
 
 ## License
 
-[MIT](https://github.com/drikshathakur786/hireready-ai/blob/main/LICENSE) © 2026 Driksha Thakur
+MIT — [Driksha Thakur](https://github.com/drikshathakur786)
