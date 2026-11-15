@@ -50,8 +50,12 @@ client = get_client()
 
 
 CANDIDATE_MODELS = [
+    "meta-llama/llama-4-scout-17b-16e-instruct",   # Llama 4 Scout — active on Groq free tier
+    "openai/gpt-oss-20b",                           # OpenAI OSS 20B — active on Groq
+    "openai/gpt-oss-120b",                          # OpenAI OSS 120B — active on Groq
+    "qwen/qwen3.8-27b",                             # Qwen 3.8 27B — active on Groq
+    # Legacy fallbacks (may still work on paid tiers):
     "llama-3.1-8b-instant",
-    "openai/gpt-oss-120b",
     "mixtral-8x7b-32768",
     "gemma2-9b-it",
 ]
@@ -81,8 +85,12 @@ def call_claude(prompt, max_tokens=1024):
         except Exception as e:
             err_msg = str(e)
             _last_error = err_msg
-            # If model is deprecated, decommissioned or not found, fall back to next model
-            if "model_not_found" in err_msg or "does not exist" in err_msg or "404" in err_msg:
+            # Fall back on any model availability / access error
+            if any(kw in err_msg for kw in [
+                "model_not_found", "does not exist", "404",
+                "do not have access", "invalid_request_error",
+                "decommissioned", "deprecated", "not supported"
+            ]):
                 print(f"WARNING: Model {model_name} unavailable: {err_msg}. Trying fallback...")
                 continue
 
