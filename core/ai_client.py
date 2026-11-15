@@ -5,6 +5,7 @@ from groq import Groq
 load_dotenv()
 
 _last_error = None
+_active_model = None   # cached after first successful call
 
 
 def get_last_error():
@@ -49,27 +50,61 @@ def get_client():
 client = get_client()
 
 
-CANDIDATE_MODELS = [
-    "meta-llama/llama-4-scout-17b-16e-instruct",   # Llama 4 Scout — active on Groq free tier
-    "openai/gpt-oss-20b",                           # OpenAI OSS 20B — active on Groq
-    "openai/gpt-oss-120b",                          # OpenAI OSS 120B — active on Groq
-    "qwen/qwen3.8-27b",                             # Qwen 3.8 27B — active on Groq
-    # Legacy fallbacks (may still work on paid tiers):
-    "llama-3.1-8b-instant",
-    "mixtral-8x7b-32768",
-    "gemma2-9b-it",
-]
+def _get_available_models(groq_client):
+    """
+    Ask Groq which text-generation models this API key can actually use.
+    Returns a list of model IDs sorted by context window size (larger = better).
+    Falls back to a hardcoded list if the models endpoint fails.
+    """
+    # Hardcoded fallback — covers both old and new Groq model IDs
+    hardcoded = [
+        "meta-llama/llama-4-scout-17b-16e-instruct",
+        "llama-3.3-70b-versatile",
+        "llama-3.1-70b-versatile",
+        "llama-3.1-8b-instant",
+        "openai/gpt-oss-120b",
+        "openai/gpt-oss-20b",
+        "qwen/qwen3.8-27b",
+        "mixtral-8x7b-32768",
+        "gemma2-9b-it",
+        "llama3-70b-8192",
+        "llama3-8b-8192",
+    ]
+
+    try:
+        models_page = groq_client.models.list()
+        # Filter to text models (exclude whisper / tts)
+        text_models = [
+            m.id for m in models_page.data
+            if not any(skip in m.id.lower() for skip in ["whisper", "tts", "speech", "guard", "safeguard"])
+        ]
+        if text_models:
+            print(f"INFO: Groq reports {len(text_models)} available text models: {text_models}")
+            # Put discovered models first, then any hardcoded extras as fallback
+            combined = text_models + [m for m in hardcoded if m not in text_models]
+            return combined
+    except Exception as e:
+        print(f"WARNING: Could not fetch model list from Groq: {e}. Using hardcoded list.")
+
+    return hardcoded
 
 
 def call_claude(prompt, max_tokens=1024):
-    global _last_error
-    # Dynamically fetch client so runtime key updates / secrets are detected
+    global _last_error, _active_model
+
     active_client = get_client()
     if active_client is None:
         print("ERROR: Groq client is not set up. Check your .env file or Streamlit secrets.")
         return None
 
-    for model_name in CANDIDATE_MODELS:
+    # If we already know a working model, try it first
+    models_to_try = []
+    if _active_model:
+        models_to_try = [_active_model]
+    else:
+        models_to_try = _get_available_models(active_client)
+
+    for model_name in models_to_try:
         try:
             response = active_client.chat.completions.create(
                 model=model_name,
@@ -79,24 +114,33 @@ def call_claude(prompt, max_tokens=1024):
                     {"role": "user", "content": prompt}
                 ]
             )
-
+            # Cache the working model so future calls skip discovery
+            _active_model = model_name
+            print(f"INFO: Using model: {model_name}")
             return response.choices[0].message.content
 
         except Exception as e:
             err_msg = str(e)
             _last_error = err_msg
-            # Fall back on any model availability / access error
+            # Any availability / access error → try next model
             if any(kw in err_msg for kw in [
                 "model_not_found", "does not exist", "404",
                 "do not have access", "invalid_request_error",
-                "decommissioned", "deprecated", "not supported"
+                "decommissioned", "deprecated", "not supported",
+                "403",
             ]):
-                print(f"WARNING: Model {model_name} unavailable: {err_msg}. Trying fallback...")
+                print(f"WARNING: Model '{model_name}' unavailable — trying next...")
+                # Reset cached model so we re-discover on next call
+                if _active_model == model_name:
+                    _active_model = None
                 continue
 
-            print(f"ERROR: Something went wrong calling Groq ({model_name}): {e}")
+            # Non-availability error (rate limit, auth, etc.) — stop immediately
+            print(f"ERROR: Groq call failed ({model_name}): {e}")
             return None
 
+    _last_error = "No working Groq model found. All candidates were unavailable for this API key."
+    print(f"ERROR: {_last_error}")
     return None
 
 
