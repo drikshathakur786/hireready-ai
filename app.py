@@ -775,6 +775,10 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
 
+    from core.ai_client import get_api_key
+    if not get_api_key():
+        st.warning("⚠️ **GROQ_API_KEY is missing**\n\nAdd your free key to `.env` or Streamlit Cloud App Secrets.")
+
 # ── MAIN TABS ─────────────────────────────────────────────────────
 tab1, tab2, tab3, tab4 = st.tabs([
     "  Analysis  ",
@@ -803,7 +807,9 @@ with tab1:
                 st.session_state.analysis_result = result
                 st.session_state.extracted_bullets = extract_bullets(st.session_state.resume_text)
             else:
-                st.error("Analysis failed. Try again.")
+                from core.ai_client import get_last_error
+                err = get_last_error()
+                st.error(f"Analysis failed: {err}" if err else "Analysis failed. Try again.")
 
     if st.session_state.analysis_result:
         from utils.formatters import display_skills, display_bullet_rewrite
@@ -1023,7 +1029,9 @@ with tab2:
             if result:
                 st.session_state.questions = result
             else:
-                st.error("Could not predict questions. Try again.")
+                from core.ai_client import get_last_error
+                err = get_last_error()
+                st.error(f"Could not predict questions: {err}" if err else "Could not predict questions. Try again.")
 
         if st.session_state.questions:
             from utils.formatters import display_question_card
@@ -1176,7 +1184,9 @@ with tab4:
                 st.session_state.simulator_evaluations = []
                 st.rerun()
             else:
-                st.error("Could not generate questions. Try again.")
+                from core.ai_client import get_last_error
+                err = get_last_error()
+                st.error(f"Could not generate questions: {err}" if err else "Could not generate questions. Try again.")
 
     # ── IN PROGRESS STAGE ──
     elif st.session_state.simulator_stage == "in_progress":
