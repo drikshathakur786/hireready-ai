@@ -34,6 +34,8 @@ def screen_resumes(uploaded_files, jd_text):
             analysis = analyse_resume(resume_text, jd_text)
 
             if not analysis:
+                from core.ai_client import get_last_error
+                err = get_last_error()
                 # If AI analysis failed, add an error row and continue
                 results.append({
                     "File Name": uploaded_file.name,
@@ -41,7 +43,7 @@ def screen_resumes(uploaded_files, jd_text):
                     "Recommendation": "Error",
                     "Matched Skills": "AI analysis failed",
                     "Missing Skills": "",
-                    "Overall Feedback": "Could not analyse this resume"
+                    "Overall Feedback": f"AI error: {err}" if err else "Could not analyse this resume"
                 })
                 continue
 
