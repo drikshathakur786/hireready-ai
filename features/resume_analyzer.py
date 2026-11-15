@@ -17,19 +17,13 @@ REQUIRED_KEYS = [
 
 
 def clean_json_response(raw_response):
-    # Sometimes the AI adds backticks or the word "json" before the JSON.
-    # Example of what we might get: ```json { ... } ```
-    # This function strips all that out so json.loads() can read it cleanly.
-
-    # Remove markdown code fences like ```json and ```
+    if not raw_response:
+        return ""
     cleaned = raw_response.strip()
-    if cleaned.startswith("```"):
-        # Find the first { and last } and extract just that part
-        start = cleaned.find("{")
-        end = cleaned.rfind("}") + 1
-        if start != -1 and end != 0:
-            cleaned = cleaned[start:end]
-
+    start = cleaned.find("{")
+    end = cleaned.rfind("}")
+    if start != -1 and end != -1 and end > start:
+        return cleaned[start:end + 1]
     return cleaned
 
 

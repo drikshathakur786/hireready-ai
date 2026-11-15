@@ -4,34 +4,57 @@ from prompts.predictor_prompt import build_predictor_prompt
 
 
 def clean_json_response(raw_response):
+    if not raw_response:
+        return ""
     cleaned = raw_response.strip()
-    if cleaned.startswith("```"):
-        start = cleaned.find("{")
-        end = cleaned.rfind("}") + 1
-        if start != -1 and end != 0:
-            cleaned = cleaned[start:end]
+    start = cleaned.find("{")
+    end = cleaned.rfind("}")
+    if start != -1 and end != -1 and end > start:
+        return cleaned[start:end + 1]
     return cleaned
+
+
+def parse_predictor_json(raw_response):
+    if not raw_response:
+        return None
+
+    # 1. Try standard extract
+    cleaned = clean_json_response(raw_response)
+    try:
+        return json.loads(cleaned)
+    except Exception:
+        pass
+
+    # 2. Try auto-repair if output was truncated mid-stream
+    start = raw_response.find("{")
+    last_obj = raw_response.rfind("}")
+    if start != -1 and last_obj != -1 and last_obj > start:
+        for suffix in ["\n  ]\n}", "\n}"]:
+            try:
+                return json.loads(raw_response[start:last_obj + 1] + suffix)
+            except Exception:
+                pass
+
+    return None
 
 
 def predict_questions(resume_text, jd_text, experience_level="Fresher"):
     # Step 1: Build the prompt
     prompt = build_predictor_prompt(resume_text, jd_text, experience_level)
 
-    # Step 2: Call AI with enough tokens for 10 questions (capped to avoid Groq TPM limits)
+    # Step 2: Call AI with enough tokens for 10 questions
     raw_response = call_claude(prompt, max_tokens=1800)
 
     if raw_response is None:
         print("ERROR: AI call failed in predict_questions")
         return None
 
-    # Step 3: Clean and parse
-    cleaned = clean_json_response(raw_response)
-
-    try:
-        result = json.loads(cleaned)
-    except json.JSONDecodeError as e:
-        print(f"ERROR: Could not parse JSON in predict_questions: {e}")
-        print(f"Raw response was: {raw_response[:300]}")
+    # Step 3: Clean and parse JSON with truncation resilience
+    result = parse_predictor_json(raw_response)
+    if not result:
+        print(f"ERROR: Could not parse JSON in predict_questions. Raw was: {raw_response[:300]}")
+        from core.ai_client import set_last_error
+        set_last_error("AI returned malformed or truncated response. Please try again.")
         return None
 
     # Step 4: Validate the top level keys exist

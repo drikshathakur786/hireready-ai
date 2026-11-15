@@ -8,12 +8,13 @@ from prompts.simulator_prompt import (
 
 
 def clean_json_response(raw_response):
+    if not raw_response:
+        return ""
     cleaned = raw_response.strip()
-    if cleaned.startswith("```"):
-        start = cleaned.find("{")
-        end = cleaned.rfind("}") + 1
-        if start != -1 and end != 0:
-            cleaned = cleaned[start:end]
+    start = cleaned.find("{")
+    end = cleaned.rfind("}")
+    if start != -1 and end != -1 and end > start:
+        return cleaned[start:end + 1]
     return cleaned
 
 

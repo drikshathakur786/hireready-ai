@@ -13,6 +13,11 @@ def get_last_error():
     return _last_error
 
 
+def set_last_error(msg):
+    global _last_error
+    _last_error = msg
+
+
 def get_api_key():
     # 1. Check local environment / .env
     key = os.getenv("GROQ_API_KEY")

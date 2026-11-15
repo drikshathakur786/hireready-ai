@@ -8,13 +8,13 @@ REQUIRED_KEYS = ["original", "rewritten", "star_breakdown", "keywords_added"]
 
 
 def clean_json_response(raw_response):
-    # Same cleaner as resume_analyzer — strips backticks if AI adds them
+    if not raw_response:
+        return ""
     cleaned = raw_response.strip()
-    if cleaned.startswith("```"):
-        start = cleaned.find("{")
-        end = cleaned.rfind("}") + 1
-        if start != -1 and end != 0:
-            cleaned = cleaned[start:end]
+    start = cleaned.find("{")
+    end = cleaned.rfind("}")
+    if start != -1 and end != -1 and end > start:
+        return cleaned[start:end + 1]
     return cleaned
 
 

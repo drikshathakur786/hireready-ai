@@ -24,12 +24,12 @@ Question mix required:
 - 1 Motivation or culture question
 
 INSTRUCTIONS:
-- Questions must be specific to THIS candidate, not generic
-- For each question explain exactly why it will be asked based on the resume/JD
-- Provide a clear step-by-step answer framework
-- Write a sample strong answer tailored to this candidate's background
-- Return ONLY valid JSON. No extra text. No markdown. No backticks.
-- Your entire response must start with {{ and end with }}
+- Questions must be specific to THIS candidate and THIS job description
+- For each question explain why it will be asked in 1 concise sentence
+- Provide a concise step-by-step answer framework (2-3 short bullet points)
+- Write a concise sample strong answer (2-3 sentences max)
+- Return ONLY valid raw JSON. No introductory text. No conversational filler. No markdown formatting.
+- Your entire response MUST begin directly with {{ and end with }}
 
 Return exactly this JSON structure:
 {{
@@ -40,8 +40,8 @@ Return exactly this JSON structure:
             "question": "<the actual interview question>",
             "category": "<exactly one of: Technical, Behavioural, Role-specific, Culture>",
             "why_asked": "<one sentence — why THIS question for THIS candidate>",
-            "answer_framework": "<step by step guide on how to structure the answer>",
-            "sample_strong_answer": "<example of a strong answer for this specific candidate>"
+            "answer_framework": "<concise step-by-step framework>",
+            "sample_strong_answer": "<concise strong answer in 2-3 sentences>"
         }}
     ]
 }}"""
