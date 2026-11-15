@@ -17,9 +17,8 @@ def predict_questions(resume_text, jd_text, experience_level="Fresher"):
     # Step 1: Build the prompt
     prompt = build_predictor_prompt(resume_text, jd_text, experience_level)
 
-    # Step 2: Call AI with more tokens — 10 detailed questions needs more space
-    # Think of max_tokens like the maximum number of words the AI can write back
-    raw_response = call_claude(prompt, max_tokens=3000)
+    # Step 2: Call AI with enough tokens for 10 questions (capped to avoid Groq TPM limits)
+    raw_response = call_claude(prompt, max_tokens=1800)
 
     if raw_response is None:
         print("ERROR: AI call failed in predict_questions")
